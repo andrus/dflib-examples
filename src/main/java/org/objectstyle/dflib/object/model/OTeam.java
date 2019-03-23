@@ -1,10 +1,10 @@
-package org.objectstyle.dflib.model;
+package org.objectstyle.dflib.object.model;
 
-public class Team {
+public class OTeam {
 
     private String name;
 
-    public Team(String name) {
+    public OTeam(String name) {
         this.name = name;
     }
 

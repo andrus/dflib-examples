@@ -1,13 +1,13 @@
-package org.objectstyle.dflib.model;
+package org.objectstyle.dflib.object.model;
 
-public class Game {
+public class OGame {
 
-    private Team homeTeam;
-    private Team visitingTeam;
+    private OTeam homeTeam;
+    private OTeam visitingTeam;
     private int homeScore;
     private int visitingScore;
 
-    public Game(Team homeTeam, Team visitingTeam, int homeScore, int visitingScore) {
+    public OGame(OTeam homeTeam, OTeam visitingTeam, int homeScore, int visitingScore) {
         this.homeTeam = homeTeam;
         this.visitingTeam = visitingTeam;
         this.homeScore = homeScore;
@@ -22,11 +22,11 @@ public class Game {
         return visitingScore;
     }
 
-    public Team getHomeTeam() {
+    public OTeam getHomeTeam() {
         return homeTeam;
     }
 
-    public Team getVisitingTeam() {
+    public OTeam getVisitingTeam() {
         return visitingTeam;
     }
 
