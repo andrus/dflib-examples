@@ -9,7 +9,7 @@ import java.util.Random;
 
 public class OGamesFactory {
 
-    public List<OGame> games(List<OTeam> teams, int gamesBetweenEachPairOfTeams) {
+    public List<OGame> games(List<OTeam> teams) {
 
         Random rnd = new Random();
 
@@ -18,16 +18,7 @@ public class OGamesFactory {
         for (OTeam ta : teams) {
             for (OTeam tb : teams) {
                 if (ta != tb) {
-                    for (int i = 0; i < gamesBetweenEachPairOfTeams; i++) {
-                        int homeScore = rnd.nextInt(6);
-                        int visitingScore = rnd.nextInt(6);
-
-                        // create a balanced number of home and team games for each team pair
-                        OTeam homeTeam = i % 2 == 0 ? ta : tb;
-                        OTeam visitingTeam = i % 2 == 0 ? tb : ta;
-
-                        games.add(new OGame(homeTeam, visitingTeam, homeScore, visitingScore));
-                    }
+                    games.add(new OGame(ta, tb, rnd.nextInt(6), rnd.nextInt(6)));
                 }
             }
         }

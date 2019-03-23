@@ -19,7 +19,7 @@ public class OStandingsCalculator {
     public static void main(String[] args) {
 
         // 10 teams, 2 games between each team
-        OChampionship championship = new OChampionshipFactory().championship(10, 2);
+        OChampionship championship = new OChampionshipFactory().championship(10);
 
         // assume these teams are tied (to demonstrate tie resolution algorithm, not because they are in fact tied)
         List<OTeam> untied = untie(championship, "t3", "t6", "t7");

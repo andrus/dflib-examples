@@ -5,9 +5,9 @@ import org.objectstyle.dflib.df.model.DFChampionship;
 
 public class DFChampionshipFactory {
 
-    public DFChampionship championship(int totalTeams, int gamesBetweenEachPairOfTeams) {
+    public DFChampionship championship(int totalTeams) {
         DataFrame teams = new DFTeamsFactory().teams(totalTeams);
-        DataFrame games = new DFGamesFactory().games(teams, gamesBetweenEachPairOfTeams);
+        DataFrame games = new DFGamesFactory().games(teams);
         return new DFChampionship(teams, games);
     }
 }

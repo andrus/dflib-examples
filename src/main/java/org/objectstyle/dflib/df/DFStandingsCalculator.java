@@ -18,7 +18,7 @@ public class DFStandingsCalculator {
     public static void main(String[] args) {
 
         // 10 teams, 2 games between each team
-        DFChampionship championship = new DFChampionshipFactory().championship(10, 2);
+        DFChampionship championship = new DFChampionshipFactory().championship(10);
 
         // assume these teams are tied (to demonstrate tie resolution algorithm, not because they are in fact tied)
         DataFrame untied = untie(championship, "t3", "t6", "t7");

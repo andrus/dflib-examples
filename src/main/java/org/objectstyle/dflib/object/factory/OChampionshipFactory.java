@@ -8,9 +8,9 @@ import java.util.List;
 
 public class OChampionshipFactory {
 
-    public OChampionship championship(int totalTeams, int gamesBetweenEachPairOfTeams) {
+    public OChampionship championship(int totalTeams) {
         List<OTeam> teams = new OTeamsFactory().teams(totalTeams);
-        List<OGame> games = new OGamesFactory().games(teams, gamesBetweenEachPairOfTeams);
+        List<OGame> games = new OGamesFactory().games(teams);
         return new OChampionship(teams, games);
     }
 }
