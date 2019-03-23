@@ -36,7 +36,7 @@ public class OStandingsCalculator {
 
             Set<OTeam> pair = pair(game.getHomeTeam(), game.getVisitingTeam());
 
-            // skip games for teams that are not tied
+            // skip games for teams that are not among the ones we are evaluating
             if (!teams.containsAll(pair)) {
                 continue;
             }
