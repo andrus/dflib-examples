@@ -3,15 +3,13 @@ package org.objectstyle.dflib.df;
 import com.nhl.dflib.DataFrame;
 import com.nhl.dflib.Index;
 import com.nhl.dflib.aggregate.Aggregator;
-import com.nhl.dflib.map.Hasher;
+import com.nhl.dflib.filter.ValuePredicate;
 import com.nhl.dflib.print.TabularPrinter;
 import com.nhl.dflib.row.RowBuilder;
 import com.nhl.dflib.row.RowProxy;
 import org.objectstyle.dflib.df.factory.DFChampionshipFactory;
 import org.objectstyle.dflib.df.model.DFChampionship;
 import org.objectstyle.dflib.df.model.DFGame;
-
-import java.util.Collection;
 
 public class DFStandingsCalculator {
 
@@ -27,67 +25,57 @@ public class DFStandingsCalculator {
 
     public static DataFrame untie(DFChampionship championship, String... tiedTeams) {
 
-        DataFrame teams = championship.teamsNamed(tiedTeams);
-        Collection<Object> pairKeysCollection = teams
-                .innerJoin(teams, (lr, rr) -> !lr.get(0).equals(rr.get(0)))
-                .renameColumns("home_team", "visiting_team")
-                .groupBy(DFStandingsCalculator::pairKey) // TODO: "groupBy" is heavy-handed.. change this to "series.unique()"
-                .getGroups();
+        ValuePredicate<String> teamsP = ValuePredicate.isIn(tiedTeams);
 
-        DataFrame pairKeys = DataFrame.fromStreamFoldByRow(Index.withNames("pair_key"), pairKeysCollection.stream());
+        // convert game scores to per-pair game points
+        DataFrame pairPoints = championship.getGames()
+                .filterByColumn("home_team", teamsP)
+                .filterByColumn("visiting_team", teamsP)
+                .map(Index.withNames("left", "right", "pair_points_diff"), DFStandingsCalculator::normalize)
+                .groupBy("left", "right").agg(
+                        Aggregator.first("left"),
+                        Aggregator.first("right"),
+                        Aggregator.sum("pair_points_diff"));
 
-        DataFrame gamePointsDiff = championship.getGames()
-                .innerJoin(pairKeys, DFStandingsCalculator::pairKey, Hasher.forColumn("pair_key"))
-                .addColumn("pair_points_diff", DFStandingsCalculator::pairPointsDiff);
-
-        DataFrame pairPointsDiff = gamePointsDiff.groupBy("pair_key").agg(
-                Aggregator.first("pair_key"),
-                Aggregator.sum("pair_points_diff"));
-
+        // convert per-pair game points to normalized pair scores
         Index psIndex = Index.withNames("team", "pair_score");
-        DataFrame leftPairScores = pairPointsDiff.map(psIndex, DFStandingsCalculator::scoreLeftPoints);
-        DataFrame rightPairScores = pairPointsDiff.map(psIndex, DFStandingsCalculator::scoreRightPoints);
-
-        // TODO: this is is asking for an operation similar to pandas DF.melt(..)
-        return leftPairScores.vConcat(rightPairScores)
+        DataFrame leftNormalScores = pairPoints.map(psIndex, DFStandingsCalculator::scoreLeftPoints);
+        DataFrame rightNormalScores = pairPoints.map(psIndex, DFStandingsCalculator::scoreRightPoints);
+        return leftNormalScores.vConcat(rightNormalScores)
                 .groupBy("team")
                 .agg(Aggregator.first("team"), Aggregator.sum("pair_score"))
                 .sortByColumns("pair_score");
     }
 
     private static void scoreLeftPoints(RowProxy from, RowBuilder to) {
-        String pair = (String) from.get("pair_key");
         long diff = (Long) from.get("pair_points_diff");
-
-        to.set("team", pair.substring(0, pair.indexOf("_")));
+        to.set("team", from.get("left"));
         to.set("pair_score", diff < 0 ? -1 : 0);
     }
 
     private static void scoreRightPoints(RowProxy from, RowBuilder to) {
-        String pair = (String) from.get("pair_key");
         long diff = (Long) from.get("pair_points_diff");
-
-        to.set("team", pair.substring(pair.indexOf("_") + 1));
+        to.set("team", from.get("right"));
         to.set("pair_score", diff > 0 ? -1 : 0);
     }
 
-    private static int pairPointsDiff(RowProxy row) {
+    private static void normalize(RowProxy from, RowBuilder to) {
+        // to be able to group by pairs regardless of home/visiting status organize teams by name
 
-        String s1 = (String) row.get("home_team");
-        String s2 = (String) row.get("visiting_team");
+        String s1 = (String) from.get("home_team");
+        String s2 = (String) from.get("visiting_team");
 
-        int hs = (Integer) row.get("home_score");
-        int vs = (Integer) row.get("visiting_score");
+        int hs = (Integer) from.get("home_score");
+        int vs = (Integer) from.get("visiting_score");
 
-        return s1.compareTo(s2) < 0
-                ? -DFGame.getHomePoints(hs, vs) + DFGame.getVisitingPoints(hs, vs)
-                : DFGame.getHomePoints(hs, vs) - DFGame.getVisitingPoints(hs, vs);
-    }
-
-    private static String pairKey(RowProxy row) {
-        String s1 = (String) row.get("home_team");
-        String s2 = (String) row.get("visiting_team");
-
-        return s1.compareTo(s2) < 0 ? s1 + "_" + s2 : s2 + "_" + s1;
+        if (s1.compareTo(s2) < 0) {
+            to.set("left", s1);
+            to.set("right", s2);
+            to.set("pair_points_diff", -DFGame.getHomePoints(hs, vs) + DFGame.getVisitingPoints(hs, vs));
+        } else {
+            to.set("left", s2);
+            to.set("right", s1);
+            to.set("pair_points_diff", DFGame.getHomePoints(hs, vs) - DFGame.getVisitingPoints(hs, vs));
+        }
     }
 }
