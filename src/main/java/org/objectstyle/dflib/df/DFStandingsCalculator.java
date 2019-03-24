@@ -2,9 +2,9 @@ package org.objectstyle.dflib.df;
 
 import com.nhl.dflib.DataFrame;
 import com.nhl.dflib.Index;
+import com.nhl.dflib.Printers;
 import com.nhl.dflib.aggregate.Aggregator;
 import com.nhl.dflib.filter.ValuePredicate;
-import com.nhl.dflib.print.TabularPrinter;
 import com.nhl.dflib.row.RowBuilder;
 import com.nhl.dflib.row.RowProxy;
 import org.objectstyle.dflib.df.factory.DFChampionshipFactory;
@@ -20,7 +20,7 @@ public class DFStandingsCalculator {
 
         // assume these teams are tied (to demonstrate tie resolution algorithm, not because they are in fact tied)
         DataFrame untied = untie(championship, "t3", "t6", "t7");
-        System.out.println(TabularPrinter.getInstance().print(new StringBuilder(), untied));
+        System.out.println(Printers.tabular.toString(untied));
     }
 
     public static DataFrame untie(DFChampionship championship, String... tiedTeams) {

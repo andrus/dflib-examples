@@ -60,10 +60,10 @@ public class OStandingsCalculator {
 
             for (OGame g : e.getValue()) {
                 AtomicInteger hs = pointsInPair.get(g.getHomeTeam());
-                hs.set(hs.get() + g.getHomeScore());
+                hs.set(hs.get() + g.getHomePoints());
 
                 AtomicInteger vs = pointsInPair.get(g.getVisitingTeam());
-                vs.set(vs.get() + g.getVisitingScore());
+                vs.set(vs.get() + g.getVisitingPoints());
             }
 
             OTeam winningInPair = pointsInPair.entrySet()
