@@ -31,20 +31,18 @@ public class DFStandingsCalculator {
         DataFrame pairPoints = championship.getGames()
                 .filterByColumn("home_team", teamsP)
                 .filterByColumn("visiting_team", teamsP)
-                .map(Index.withNames("left", "right", "pair_points_diff"), DFStandingsCalculator::normalize)
-                .groupBy("left", "right").agg(
-                        Aggregator.first("left"),
-                        Aggregator.first("right"),
-                        Aggregator.sum("pair_points_diff"));
+                .map(Index.forLabels("left", "right", "pair_points_diff"), DFStandingsCalculator::normalize)
+                .groupBy("left", "right")
+                .agg(Aggregator.first("left"), Aggregator.first("right"), Aggregator.sum("pair_points_diff"));
 
         // convert per-pair game points to normalized pair scores
-        Index psIndex = Index.withNames("team", "pair_score");
+        Index psIndex = Index.forLabels("team", "pair_score");
         DataFrame leftNormalScores = pairPoints.map(psIndex, DFStandingsCalculator::scoreLeftPoints);
         DataFrame rightNormalScores = pairPoints.map(psIndex, DFStandingsCalculator::scoreRightPoints);
         return leftNormalScores.vConcat(rightNormalScores)
                 .groupBy("team")
                 .agg(Aggregator.first("team"), Aggregator.sum("pair_score"))
-                .sortByColumns("pair_score");
+                .sortByColumn("pair_score", true);
     }
 
     private static void scoreLeftPoints(RowProxy from, RowBuilder to) {

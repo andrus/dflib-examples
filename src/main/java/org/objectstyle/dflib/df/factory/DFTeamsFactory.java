@@ -15,6 +15,6 @@ public class DFTeamsFactory {
             teams.add(new Object[]{"t" + i});
         }
 
-        return DataFrame.fromRows(Index.withNames("name"), teams);
+        return DataFrame.forRows(Index.forLabels("name"), teams);
     }
 }

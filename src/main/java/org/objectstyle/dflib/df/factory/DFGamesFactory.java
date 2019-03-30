@@ -16,7 +16,7 @@ public class DFGamesFactory {
                 .renameColumns("home_team", "visiting_team");
 
         return pairs.map(
-                Index.withNames("home_team", "visiting_team", "home_score", "visiting_score"),
+                Index.forLabels("home_team", "visiting_team", "home_score", "visiting_score"),
                 (from, to) -> to.setValues(from.get(0), from.get(1), rnd.nextInt(6), rnd.nextInt(6)));
     }
 }
