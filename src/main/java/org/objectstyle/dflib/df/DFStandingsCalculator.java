@@ -29,10 +29,10 @@ public class DFStandingsCalculator {
 
         // convert game scores to per-pair game points
         DataFrame pairPoints = championship.getGames()
-                .filterByColumn("home_team", teamsP)
-                .filterByColumn("visiting_team", teamsP)
+                .filter("home_team", teamsP)
+                .filter("visiting_team", teamsP)
                 .map(Index.forLabels("left", "right", "pair_points_diff"), DFStandingsCalculator::normalize)
-                .groupBy("left", "right")
+                .group("left", "right")
                 .agg(Aggregator.first("left"), Aggregator.first("right"), Aggregator.sum("pair_points_diff"));
 
         // convert per-pair game points to normalized pair scores
@@ -40,9 +40,9 @@ public class DFStandingsCalculator {
         DataFrame leftNormalScores = pairPoints.map(psIndex, DFStandingsCalculator::scoreLeftPoints);
         DataFrame rightNormalScores = pairPoints.map(psIndex, DFStandingsCalculator::scoreRightPoints);
         return leftNormalScores.vConcat(rightNormalScores)
-                .groupBy("team")
+                .group("team")
                 .agg(Aggregator.first("team"), Aggregator.sum("pair_score"))
-                .sortByColumn("pair_score", true);
+                .sort("pair_score", true);
     }
 
     private static void scoreLeftPoints(RowProxy from, RowBuilder to) {
